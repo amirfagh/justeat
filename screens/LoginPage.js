@@ -3,11 +3,11 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Image,
   TouchableOpacity,
   Alert,
+  ImageBackground,
 } from "react-native";
 import firebase from "../firebase"; // Adjust the path if necessary
 
@@ -50,96 +50,109 @@ const LoginPage = ({ navigation }) => {
     });
   };
 
+  const showContactInfo = () => {
+    Alert.alert(
+      "Unity Developments",
+      "For support, call or message 0525454174",
+      [{ text: "OK" }]
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/logo.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Image
-        source={require("../assets/sandw.png")}
-        style={styles.foodImages}
-        resizeMode="contain"
-      />
+    <ImageBackground
+      source={require("../assets/BG.png")} // Adjust the path if necessary
+      style={styles.background}
+    >
+      <View style={styles.container}>
+        <Image
+          source={require("../assets/logo4.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Image
+          source={require("../assets/sandw2.png")}
+          style={styles.foodImages}
+          resizeMode="contain"
+        />
 
-      <Text style={styles.mainText}>
-        Log In or{" "}
-        <Text
-          style={styles.signUpText}
-          onPress={() => navigation.navigate("SignUp")}
-        >
-          Sign up Now!
+        <Text style={styles.mainText}>
+          Log In or{" "}
+          <Text
+            style={styles.signUpText}
+            onPress={() => navigation.navigate("SignUp")}
+          >
+            Sign up Now!
+          </Text>
         </Text>
-      </Text>
-      <Text style={styles.subText}>
-        Save your details for a faster Checkout experience
-      </Text>
+        <Text style={styles.subText}>
+          Save your details for a faster Checkout experience
+        </Text>
 
-      <TextInput
-        style={styles.textInput}
-        placeholder="phone number:"
-        placeholderTextColor="black"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-      />
-      <TextInput
-        style={styles.textInput}
-        placeholder="Password:"
-        placeholderTextColor="black"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        <TextInput
+          style={styles.textInput}
+          placeholder="phone number:"
+          placeholderTextColor="black"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+        />
+        <TextInput
+          style={styles.textInput}
+          placeholder="Password:"
+          placeholderTextColor="black"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={login}>
-        <Text style={styles.buttonText}>Log In</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => Alert.alert("Password recovery not implemented")}
-      >
-        <Text style={styles.forgotPassword}>Forgot Password?</Text>
-      </TouchableOpacity>
-
+        <TouchableOpacity style={styles.button} onPress={login}>
+          <Text style={styles.buttonText}>Log In</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.footer}>
-        <Text>Launched by</Text>
-        <Text> AMA Developments</Text>
-        <TouchableOpacity onPress={() => Alert.alert("Contact us clicked")}>
+        <Text style={styles.ud}>Launched by Unity Developments</Text>
+
+        <TouchableOpacity onPress={showContactInfo}>
           <Text style={styles.contactUs}>Contact us</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    marginTop: 30,
+  },
   container: {
     flex: 1,
-    padding: 20,
+
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    // Removed or adjust the background color for better visibility of the background image
+    // backgroundColor: "rgba(255, 255, 255, 0.8)", // Optional: Adjust the opacity
     marginTop: 30,
-
     overflow: "hidden",
   },
   logo: {
-    top: 40,
+    top: 28,
     width: 240,
     height: 240,
   },
   foodImages: {
-    width: 420,
+    width: "100%",
     height: 253,
   },
   mainText: {
     fontSize: 16,
     textAlign: "center",
+    color: "white",
     marginBottom: 10,
   },
   signUpText: {
-    color: "black",
+    color: "white",
     fontWeight: "bold",
     textDecorationLine: "underline",
   },
@@ -150,13 +163,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 10,
     marginHorizontal: 10,
-    backgroundColor: "#F89D14",
-
+    backgroundColor: "#2E3D1A",
     justifyContent: "center",
     alignItems: "center",
   },
   buttonText: {
-    color: ".white",
+    color: "white",
   },
   customButton: {
     width: "39%",
@@ -165,8 +177,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 10,
     marginHorizontal: 10,
-    backgroundColor: "#F89D14",
-
+    backgroundColor: "#2E3D1A",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -177,28 +188,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     marginBottom: 20,
+    color: "white",
   },
   textInput: {
-    width: "90%",
+    width: "80%",
     height: 45,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#F89D14",
+    borderColor: "#2E3D1A",
     marginBottom: 12,
     paddingHorizontal: 10,
     backgroundColor: "#fff",
   },
-  forgotPassword: {
-    color: "gray",
-    marginTop: 10,
-  },
   footer: {
-    marginTop: 30,
-    bottom: 20,
     alignItems: "center",
+    width: "100%",
+    backgroundColor: "#2E3D1A",
+    paddingVertical: 5,
+    height: 60,
+    bottom: 1,
+  },
+  ud: {
+    color: "white",
   },
   contactUs: {
-    color: "black",
+    color: "white",
     textDecorationLine: "underline",
   },
 });

@@ -5,6 +5,7 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  ImageBackground,
 } from "react-native";
 import firebase from "../firebase"; // Adjust the path if necessary
 
@@ -99,7 +100,7 @@ const AccountPage = ({ route, navigation }) => {
           Phone Number: {userData.phoneNumber}
         </Text>
         <Text style={styles.userInfoText}>Address: {userData.address}</Text>
-        <Text style={styles.orderHistoryTitle}>Order History</Text>
+        <Text style={styles.orderHistoryTitle}>Orders History</Text>
       </View>
     );
   };
@@ -121,32 +122,34 @@ const AccountPage = ({ route, navigation }) => {
   }
 
   return (
-    <FlatList
-      data={orderHistory}
-      ListHeaderComponent={renderHeader}
-      renderItem={renderOrderItem}
-      keyExtractor={(item, index) => index.toString()}
-      contentContainerStyle={styles.container}
-    />
+    <ImageBackground
+      source={require("../assets/BG.png")}
+      style={styles.container}
+    >
+      <FlatList
+        data={orderHistory}
+        ListHeaderComponent={renderHeader}
+        renderItem={renderOrderItem}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={styles.container}
+      />
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#fff",
+
     padding: 10,
-    marginTop: 30,
   },
   userInfoContainer: {
     marginBottom: 20,
     padding: 15,
-    borderBottomWidth: 1, // Only bottom border
-    borderLeftWidth: 1, // Left border
-    borderRightWidth: 1, // Right border
-    borderColor: "#F89D14",
-    borderBottomLeftRadius: 10, // Bottom left radius
-    borderBottomRightRadius: 10, // Bottom right radius
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#2E3D1A",
+    borderRadius: 10,
     shadowColor: "#fff", // Shadow color
     shadowOffset: { width: 0, height: 4 }, // Stronger shadow offset
     shadowOpacity: 0.4, // Stronger shadow opacity
@@ -162,13 +165,15 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 10,
-    color: "#F89D14",
+    marginHorizontal: "auto",
+    color: "#2E3D1A",
   },
   orderItemContainer: {
+    backgroundColor: "#fff",
     marginBottom: 20,
     padding: 10,
     borderWidth: 1,
-    borderColor: "#F89D14",
+    borderColor: "#2E3D1A",
     borderRadius: 10,
     shadowColor: "#fff", // Shadow color
     shadowOffset: { width: 0, height: 4 }, // Stronger shadow offset

@@ -42,7 +42,7 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen name="Account" component={AccountPage} />
-          <Stack.Screen name="Waiting" component={WaitingPage} />
+          <Stack.Screen name="Order Status" component={WaitingPage} />
         </Stack.Navigator>
       </NavigationContainer>
     </CartProvider>

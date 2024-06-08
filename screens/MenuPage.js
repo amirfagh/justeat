@@ -22,17 +22,19 @@ const MenuPage = ({ route, navigation }) => {
   const { addItemToCart } = useContext(CartContext); // Use the CartContext
 
   const categories = [
-    { name: "sandwish", arabic: "ساندويشات" },
-    { name: "meal", arabic: "وجبات" },
-    { name: "drink", arabic: "مشروبات" },
-    { name: "salad", arabic: "سلطات" },
-    { name: "sauce", arabic: "صلصات" },
+    { name: "Sandwiches", arabic: "ساندويشات" },
+    { name: "Meals", arabic: "وجبات" },
+    { name: "Beverages", arabic: "مشروبات" },
+    { name: "Salads", arabic: "سلطات" },
+    { name: "French Fries", arabic: "بطاطا مقلية" },
+    { name: "Sauces", arabic: "صلصات" },
   ];
 
   const scrollViewRef = useRef(null);
   const [categoryPositions, setCategoryPositions] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null); // Add this line
   const scrollY = useRef(new Animated.Value(0)).current;
   const [selectedOptions, setSelectedOptions] = useState({});
 
@@ -52,6 +54,18 @@ const MenuPage = ({ route, navigation }) => {
       });
     }
   }, [category, categoryPositions]);
+
+  const handleScroll = (event) => {
+    const scrollPosition = event.nativeEvent.contentOffset.y;
+    let currentCategory = selectedCategory;
+
+    for (const [categoryName, position] of Object.entries(categoryPositions)) {
+      if (scrollPosition >= position - 50) {
+        currentCategory = categoryName;
+      }
+    }
+    setSelectedCategory(currentCategory);
+  };
 
   const renderCategory = (categoryName, categoryArabic, items) => {
     return (
@@ -87,27 +101,32 @@ const MenuPage = ({ route, navigation }) => {
   };
 
   const handleItemPress = async (item) => {
-    try {
-      const optionsSnapshot = await firebase
-        .firestore()
-        .collection("menu")
-        .doc(item.id)
-        .collection("options")
-        .get();
-      const options = [];
-      optionsSnapshot.forEach((doc) => {
-        options.push({ id: doc.id, ...doc.data() });
-      });
-      setSelectedOptions(
-        options.reduce((acc, option) => {
-          acc[option.id] = option.selected === "true";
-          return acc;
-        }, {})
-      );
-      setSelectedItem({ ...item, options });
+    if (item.category === "Sandwiches") {
+      try {
+        const optionsSnapshot = await firebase
+          .firestore()
+          .collection("menu")
+          .doc(item.id)
+          .collection("options")
+          .get();
+        const options = [];
+        optionsSnapshot.forEach((doc) => {
+          options.push({ id: doc.id, ...doc.data() });
+        });
+        setSelectedOptions(
+          options.reduce((acc, option) => {
+            acc[option.id] = option.selected === "true";
+            return acc;
+          }, {})
+        );
+        setSelectedItem({ ...item, options });
+        setModalVisible(true);
+      } catch (error) {
+        console.error("Error fetching options: ", error);
+      }
+    } else {
+      setSelectedItem({ ...item, options: [] });
       setModalVisible(true);
-    } catch (error) {
-      console.error("Error fetching options: ", error);
     }
   };
 
@@ -135,7 +154,11 @@ const MenuPage = ({ route, navigation }) => {
   };
 
   const renderOption = (option) => (
-    <View key={option.id} style={styles.optionContainer}>
+    <TouchableOpacity
+      key={option.id}
+      style={styles.optionContainer}
+      onPress={() => handleOptionToggle(option.id)}
+    >
       <Image source={{ uri: option.image }} style={styles.optionImage} />
       <Text style={styles.optionName}>{option.name}</Text>
       <Text style={styles.optionPrice}>
@@ -152,7 +175,7 @@ const MenuPage = ({ route, navigation }) => {
           <Icon
             name="check-square"
             size={24}
-            color="#F89D14"
+            color="#2E3D1A"
             iconStyle={{ backgroundColor: "#F89D14" }}
           />
         }
@@ -160,13 +183,13 @@ const MenuPage = ({ route, navigation }) => {
           <Icon
             name="square"
             size={24}
-            color="#F89D14"
+            color="#2E3D1A"
             iconStyle={{ backgroundColor: "#F89D14" }}
           />
         }
         containerStyle={styles.checkBoxContainer}
       />
-    </View>
+    </TouchableOpacity>
   );
 
   const headerHeight = scrollY.interpolate({
@@ -176,7 +199,10 @@ const MenuPage = ({ route, navigation }) => {
   });
 
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require("../assets/BG.png")}
+      style={styles.container}
+    >
       <Animated.View style={[styles.headerContainer, { height: headerHeight }]}>
         <ImageBackground
           source={require("../assets/sandw.png")} // Adjust the path to your background image
@@ -198,18 +224,24 @@ const MenuPage = ({ route, navigation }) => {
             </View>
             <View style={styles.headerDetails2}>
               <Text style={styles.headerDetail}>10 Nis</Text>
-              <Text style={styles.headerDetail}>20 - 30 min</Text>
+              <Text style={styles.headerDetail2}>20 - 30 min</Text>
               <Text style={styles.headerDetail}>Just Eat</Text>
             </View>
           </View>
         </ImageBackground>
       </Animated.View>
       <View style={styles.footer}>
+        <Image
+          source={require("../assets/menu.png")}
+          style={styles.logo3}
+          resizeMode="contain"
+        />
         {categories.map((cat) => (
           <TouchableOpacity
             key={cat.name}
             style={styles.footerButton}
             onPress={() => {
+              setSelectedCategory(cat.name); // Set the selected category
               if (categoryPositions[cat.name] !== undefined) {
                 scrollViewRef.current.scrollTo({
                   y: categoryPositions[cat.name],
@@ -218,7 +250,19 @@ const MenuPage = ({ route, navigation }) => {
               }
             }}
           >
-            <Text style={styles.footerButtonText}>{cat.name}</Text>
+            <View style={styles.footerButtonTextContainer}>
+              <Text
+                style={[
+                  styles.footerButtonText,
+                  selectedCategory === cat.name && styles.selectedCategoryText, // Apply underline style if selected
+                ]}
+              >
+                {cat.name}
+              </Text>
+              {selectedCategory === cat.name && (
+                <View style={styles.underline} />
+              )}
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -227,7 +271,7 @@ const MenuPage = ({ route, navigation }) => {
           ref={scrollViewRef}
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
+            { useNativeDriver: false, listener: handleScroll }
           )}
         >
           {categories.map((cat) => {
@@ -238,25 +282,30 @@ const MenuPage = ({ route, navigation }) => {
           })}
         </Animated.ScrollView>
       </View>
-      <View style={styles.footer2}>
-        <TouchableOpacity
-          style={styles.footer2Button}
-          onPress={() =>
-            navigation.navigate("Cart", {
-              category,
-              menuItems,
-              uid,
-              address,
-              name,
-              phonenumber,
-            })
-          }
-        >
-          <View style={styles.footer2ButtonContent}>
-            <Text style={styles.footer2ButtonText}>View basket</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+
+      <TouchableOpacity
+        style={styles.footer2Button}
+        onPress={() =>
+          navigation.navigate("Cart", {
+            category,
+            menuItems,
+            uid,
+            address,
+            name,
+            phonenumber,
+          })
+        }
+      >
+        <View style={styles.footer2ButtonContent}>
+          <Image
+            source={require("../assets/basket2.png")}
+            style={styles.logo2}
+            resizeMode="contain"
+          />
+          <Text style={styles.footer2ButtonText}>View basket</Text>
+        </View>
+      </TouchableOpacity>
+
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -284,23 +333,27 @@ const MenuPage = ({ route, navigation }) => {
                       {selectedItem.price} NIS
                     </Text>
                   </View>
-                  <Text style={styles.modalOptionsTitle}>Options</Text>
-                  <View style={styles.modalOptionsContainer}>
-                    {selectedItem.options
-                      .filter((option) => option.selected === "true")
-                      .map(renderOption)}
-                  </View>
-                  <Text style={styles.modalOptionsTitle}>Extras</Text>
-                  <View style={styles.modalOptionsContainer}>
-                    {selectedItem.options
-                      .filter((option) => option.selected === "false")
-                      .map(renderOption)}
-                  </View>
+                  {selectedItem.category === "Sandwiches" && (
+                    <>
+                      <Text style={styles.modalOptionsTitle}>Options</Text>
+                      <View style={styles.modalOptionsContainer}>
+                        {selectedItem.options
+                          .filter((option) => option.selected === "true")
+                          .map(renderOption)}
+                      </View>
+                      <Text style={styles.modalOptionsTitle}>Extras</Text>
+                      <View style={styles.modalOptionsContainer}>
+                        {selectedItem.options
+                          .filter((option) => option.selected === "false")
+                          .map(renderOption)}
+                      </View>
+                    </>
+                  )}
                   <TouchableOpacity
                     style={styles.addButton}
                     onPress={handleAddToCart}
                   >
-                    <Text style={styles.addButtonText}>Add to Cart</Text>
+                    <Text style={styles.addButtonText}>Add to Basket</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -308,7 +361,7 @@ const MenuPage = ({ route, navigation }) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -357,6 +410,13 @@ const styles = StyleSheet.create({
     width: 70,
     borderRadius: 25,
   },
+  logo2: {
+    marginRight: 10,
+  },
+  logo3: {
+    marginVertical: "auto",
+    marginLeft: 3,
+  },
   headerTitle: {
     marginLeft: 80,
     fontSize: 20,
@@ -378,6 +438,10 @@ const styles = StyleSheet.create({
   headerDetail: {
     fontSize: 10,
   },
+  headerDetail2: {
+    fontSize: 10,
+    marginLeft: 8,
+  },
   menuContainer: {
     flex: 1,
   },
@@ -388,7 +452,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#fff",
+
     padding: 20,
     marginBottom: 10,
     borderRadius: 10,
@@ -398,6 +462,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textDecorationLine: "underline",
     marginLeft: 15,
+    color: "white",
   },
   categoryTitleArabic: {
     fontSize: 22,
@@ -405,6 +470,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
     textDecorationLine: "underline",
     marginRight: 15,
+    color: "white",
   },
   flatListContainer: {
     paddingBottom: 10,
@@ -412,7 +478,7 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+
     height: 73,
     width: "90%",
     marginVertical: 5,
@@ -468,10 +534,19 @@ const styles = StyleSheet.create({
     height: 36,
   },
   footerButton: {
-    padding: 5,
+    padding: 8,
   },
   footerButtonText: {
-    fontSize: 15,
+    fontSize: 10,
+  },
+  footerButtonTextContainer: {
+    alignItems: "center",
+  },
+  underline: {
+    width: "100%",
+    height: 4,
+    backgroundColor: "#2E3D1A",
+    marginTop: 2,
   },
   footer2: {
     flexDirection: "row",
@@ -491,16 +566,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#F89D14",
+
     borderRadius: 10,
     paddingVertical: 5,
     height: 43,
-    width: "90%",
+    width: "100%",
     paddingHorizontal: 15,
+    backgroundColor: "#2E3D1A",
   },
   footer2ButtonContent: {
     flexDirection: "row",
     alignItems: "center",
+    marginHorizontal: "auto",
   },
   footer2ButtonTextContainer: {
     backgroundColor: "#F0F0F0",
@@ -510,7 +587,7 @@ const styles = StyleSheet.create({
   },
   footer2ButtonText: {
     fontSize: 16,
-    color: "#000",
+    color: "#fff",
   },
   modalContainer: {
     flex: 1,
@@ -538,11 +615,11 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#F89D14",
+    backgroundColor: "white",
   },
   closeButtonText: {
     fontSize: 20,
-    color: "#fff",
+    color: "#000",
     fontWeight: "bold",
   },
 
@@ -591,7 +668,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "#fff",
     borderRightWidth: 1, // Right border
-    borderColor: "#F89D14",
+    borderColor: "#2E3D1A",
     borderRadius: 10,
     shadowColor: "#000", // Shadow color
     shadowOffset: { width: 0, height: 4 }, // Stronger shadow offset
@@ -620,7 +697,7 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
   },
   addButton: {
-    backgroundColor: "#F89D14",
+    backgroundColor: "#2E3D1A",
     padding: 10,
     borderRadius: 5,
     alignItems: "center",

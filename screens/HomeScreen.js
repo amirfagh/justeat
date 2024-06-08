@@ -9,24 +9,47 @@ import {
   ScrollView,
   Animated,
   Easing,
+  ImageBackground,
+  ActivityIndicator,
 } from "react-native";
 import firebase from "../firebase"; // Adjust the path if necessary
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 const HomeScreen = ({ route, navigation }) => {
-  const { uid, name, phonenumber } = route.params;
+  const { uid } = route.params;
   const [userInfo, setUserInfo] = useState({ name: "", phoneNumber: "" });
   const [menuItems, setMenuItems] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
 
   const categories = [
-    { name: "sandwish", arabic: "ساندويشات" },
-    { name: "meal", arabic: "وجبات" },
-    { name: "drink", arabic: "مشروبات" },
-    { name: "salad", arabic: "سلطات" },
-    { name: "sauce", arabic: "صلصات" },
+    { name: "Sandwiches", arabic: "ساندويشات" },
+    { name: "Meals", arabic: "وجبات" },
+    { name: "Beverages", arabic: "مشروبات" },
+    { name: "Salads", arabic: "سلطات" },
+    { name: "French Fries", arabic: "بطاطا مقلية" },
+    { name: "Sauces", arabic: "صلصات" },
   ];
+
+  const checkIfOpen = async () => {
+    try {
+      const settingsDoc = await firebase
+        .firestore()
+        .collection("settings")
+        .doc("restaurant")
+        .get();
+      if (settingsDoc.exists) {
+        const { isOpen } = settingsDoc.data();
+        setIsOpen(isOpen);
+      }
+    } catch (error) {
+      console.error("Error fetching settings: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -60,6 +83,7 @@ const HomeScreen = ({ route, navigation }) => {
 
     fetchUserInfo();
     fetchMenuItems();
+    setTimeout(checkIfOpen, 600);
   }, [uid]);
 
   useEffect(() => {
@@ -68,7 +92,7 @@ const HomeScreen = ({ route, navigation }) => {
         Animated.sequence([
           Animated.timing(scrollX, {
             toValue: 1000,
-            duration: 20000,
+            duration: 30000,
             easing: Easing.linear,
             useNativeDriver: false,
           }),
@@ -126,9 +150,46 @@ const HomeScreen = ({ route, navigation }) => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (!isOpen) {
+    return (
+      <ImageBackground
+        source={require("../assets/BG.png")}
+        style={styles.container}
+      >
+        <Text style={styles.closedText}>
+          The restaurant is closed now or might be so busy, try again later
+        </Text>
+        <Text style={styles.closedText}>
+          Usuall opening hours are 12:00 23:00
+        </Text>
+      </ImageBackground>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
+    <ImageBackground
+      source={require("../assets/BG.png")}
+      style={styles.container}
+    >
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("Account", {
+            uid,
+            name: userInfo.name,
+            phonenumber: userInfo.phoneNumber,
+            address: userInfo.address,
+          })
+        }
+        style={styles.headerContainer}
+      >
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerText}>Name: {userInfo.name}</Text>
           <Text style={styles.headerText}>
@@ -137,67 +198,28 @@ const HomeScreen = ({ route, navigation }) => {
         </View>
 
         <Image
-          source={require("../assets/logo2.png")}
+          source={require("../assets/logo4.png")}
           style={styles.logo}
           resizeMode="contain"
         />
-      </View>
-      <ScrollView style={styles.menuContainer}>
-        {categories.map((category) => (
-          <View key={category.name}>{renderCategory(category)}</View>
-        ))}
-      </ScrollView>
-      <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Waiting", { uid })}
-          style={styles.footerIcon}
-        >
-          <Image
-            source={require("../assets/logo2.png")}
-            style={styles.logo2}
-            resizeMode="contain"
-          />
-          <Text style={styles.footerText}>My Order</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("Cart", {
-              uid,
-              name: userInfo.name,
-              phonenumber: userInfo.phoneNumber,
-              address: userInfo.address,
-            })
-          }
-          style={styles.footerIcon}
-        >
-          <Image
-            source={require("../assets/basket.png")}
-            style={styles.logo2}
-            resizeMode="contain"
-          />
-          <Text style={styles.footerText}>Basket</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("Account", {
-              uid,
-              name: userInfo.name,
-              phonenumber: userInfo.phoneNumber,
-              address: userInfo.address,
-            })
-          }
-          style={styles.footerIcon}
-        >
-          <Image
-            source={require("../assets/Vector.png")}
-            style={styles.logo2}
-            resizeMode="contain"
-          />
-          <Text style={styles.footerText}>My Account</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </TouchableOpacity>
+      <ImageBackground
+        source={require("../assets/BG.png")} // Adjust the path if necessary
+        style={styles.menuContainer}
+      >
+        <ScrollView style={styles.menuContainer}>
+          {categories.map((category) => (
+            <View key={category.name}>{renderCategory(category)}</View>
+          ))}
+        </ScrollView>
+      </ImageBackground>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Order Status", { uid })}
+        style={styles.footer}
+      >
+        <Text style={styles.footerText}>Delivery Status</Text>
+      </TouchableOpacity>
+    </ImageBackground>
   );
 };
 
@@ -216,6 +238,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
     textDecorationLine: "underline",
     marginRight: 15,
+    color: "white",
   },
   categoryTitleContainer: {
     flexDirection: "row",
@@ -232,23 +255,26 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 10,
     paddingVertical: 3,
-    backgroundColor: "#fff",
-    borderBottomLeftRadius: 10, // Bottom left radius
-    borderBottomRightRadius: 10, // Bottom right radius
+    backgroundColor: "#2E3D1A",
+    borderTopLeftRadius: 10, // Bottom left radius
+    borderTopRightRadius: 10, // Bottom right radius
     shadowColor: "#000", // Shadow color
     shadowOffset: { width: 0, height: 4 }, // Stronger shadow offset
     shadowOpacity: 0.4, // Stronger shadow opacity
     shadowRadius: 5, // Stronger shadow radius
     elevation: 10, // Higher elevation for Android shadowid shadow
+    height: 60,
   },
   footerIcon: {
     padding: 10,
     alignItems: "center",
   },
   footerText: {
-    marginTop: 5,
-    fontSize: 12,
-    color: "#333",
+    padding: "auto",
+    marginHorizontal: "auto",
+    marginVertical: "auto",
+    fontSize: 25,
+    color: "#fff",
   },
   container: {
     flex: 1,
@@ -258,14 +284,13 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF", // Set the background to white
+    backgroundColor: "#B4986B", // Set the background to white
     padding: 20,
-    marginTop: 10,
-    marginBottom: 10,
+
     borderRadius: 10,
     shadowColor: "#000", // Shadow color
     shadowOffset: { width: 0, height: 4 }, // Stronger shadow offset
-    shadowOpacity: 0.4, // Stronger shadow opacity
+    shadowOpacity: 0.8, // Stronger shadow opacity
     shadowRadius: 5, // Stronger shadow radius
     elevation: 10, // Higher elevation for Android shadow
   },
@@ -275,6 +300,7 @@ const styles = StyleSheet.create({
   headerText: {
     marginBottom: 7,
     fontSize: 18,
+    color: "white",
   },
   basketIcon: {
     marginLeft: 10,
@@ -292,13 +318,14 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     textDecorationLine: "underline",
     marginLeft: 5,
+    color: "white",
   },
   itemContainer: {
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#fff",
 
-    borderRadius: 8,
+    borderRadius: 10,
     marginLeft: 10,
   },
   itemImage: {
@@ -321,7 +348,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, // Only bottom border
     borderLeftWidth: 1, // Left border
     borderRightWidth: 1, // Right border
-    borderColor: "#F89D14",
+    borderColor: "#2E3D1A",
     borderBottomLeftRadius: 10, // Bottom left radius
     borderBottomRightRadius: 10, // Bottom right radius
     shadowColor: "#000", // Shadow color
@@ -341,6 +368,18 @@ const styles = StyleSheet.create({
     textAlign: "right",
     width: "100%",
     paddingRight: 5,
+  },
+  closedText: {
+    fontSize: 40,
+    textAlign: "center",
+    marginTop: 50,
+    color: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
 });
 

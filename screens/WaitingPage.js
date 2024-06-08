@@ -1,6 +1,6 @@
 // WaitingPage.js
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, ImageBackground } from "react-native";
 import firebase from "../firebase"; // Adjust the path if necessary
 
 const WaitingPage = ({ route }) => {
@@ -43,14 +43,14 @@ const WaitingPage = ({ route }) => {
   const getStatusMessage = () => {
     switch (orderStatus) {
       case "pending":
-        return "Waiting for the restaurant to accept the order";
+        return "Waiting for the restaurant to accept the order الطلب ينتظر موافقة المطعم";
       case "accepted":
-        return "Order is being prepared at the restaurant";
+        return "Order is being prepared at the restaurant يتم تحضير الطلب في المطعم";
       case "delivery":
-        return "Order is being delivered";
+        return "Order is being delivered الطلب قيد التوصيل";
       case "done":
       default:
-        return "You don't have current orders, please place an order";
+        return "You don't have current orders, please place an order لا يوجد طلبات,الرجاء اضافة الماكولات";
     }
   };
 
@@ -63,10 +63,13 @@ const WaitingPage = ({ route }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require("../assets/bg2.png")}
+      style={styles.container}
+    >
       <Image source={require("../assets/del.png")} style={styles.image} />
       <Text style={styles.statusText}>{getStatusMessage()}</Text>
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -75,11 +78,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F89D14",
   },
   image: {
-    width: 300,
-    height: 300,
+    width: 200,
+    height: 200,
     marginBottom: 20,
   },
   statusText: {

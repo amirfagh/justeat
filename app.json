@@ -1,27 +1,50 @@
 {
   "expo": {
-    "name": "food-ordering-app",
+    "name": "Just-Eat",
     "slug": "food-ordering-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo4.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/logo4.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "y"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo4.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.amirfagh.foodorderingapp"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logo4.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bcfee95d-4852-43ee-a7ff-190097bca0bc"
+      }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bcfee95d-4852-43ee-a7ff-190097bca0bc"
     }
   }
 }

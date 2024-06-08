@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
   ScrollView,
+  ImageBackground,
 } from "react-native";
 import { CartContext } from "../screens/CartContext";
 import firebase from "../firebase"; // Adjust the path if necessary
@@ -93,12 +94,8 @@ const CartPage = ({ route, navigation }) => {
           orders: firebase.firestore.FieldValue.arrayUnion(sequenceNumber),
         });
 
-        Alert.alert(
-          "Order processed",
-          "Your order has been placed successfully!"
-        );
         clearCart();
-        navigation.navigate("Waiting", { uid });
+        navigation.navigate("Order Status", { uid });
       });
     } catch (error) {
       console.error("Error sending order: ", error);
@@ -143,8 +140,12 @@ const CartPage = ({ route, navigation }) => {
 
   if (cartItems.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyCartText}>Your cart is empty.</Text>
+      <ImageBackground
+        source={require("../assets/BG.png")}
+        style={styles.emptyContainer}
+      >
+        <Text style={styles.emptyCartText}>Your Basket is empty.</Text>
+        <Text style={styles.emptyCartText}>Add some food to your basket.</Text>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() =>
@@ -161,12 +162,15 @@ const CartPage = ({ route, navigation }) => {
           <Text style={styles.addButtonText}>Add More</Text>
           <Text style={styles.addButtonText}>لاضافة المزيد</Text>
         </TouchableOpacity>
-      </View>
+      </ImageBackground>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require("../assets/BG.png")}
+      style={styles.container}
+    >
       <FlatList
         ListHeaderComponent={
           <>
@@ -268,9 +272,21 @@ const CartPage = ({ route, navigation }) => {
             <View style={styles.divider} />
             <View style={styles.paymentSummary}>
               <Text style={styles.paymentSummaryTitle}>Payment summary</Text>
-              <Text style={styles.paymentSummaryText}>
-                Delivery estimated time: 40min : وقت التوصيل المتوقع
-              </Text>
+              {orderType === "Pick Up" && (
+                <Text style={styles.paymentSummaryText}>
+                  Preparing estimated time: 20min : وقت التجهيز المتوقع
+                </Text>
+              )}
+              {orderType === "Eat In" && (
+                <Text style={styles.paymentSummaryText}>
+                  Preparing estimated time: 20min : وقت التجهيز المتوقع
+                </Text>
+              )}
+              {orderType === "Delivery" && (
+                <Text style={styles.paymentSummaryText}>
+                  Delivery estimated time: 40min : وقت التوصيل المتوقع
+                </Text>
+              )}
               <Text style={styles.paymentSummaryText}>
                 Address: {address} العنوان
               </Text>
@@ -317,7 +333,7 @@ const CartPage = ({ route, navigation }) => {
                 onPress={handleProceedToOrder}
               >
                 <Text style={styles.checkoutButtonText}>Checkout</Text>
-                <Text style={styles.checkoutButtonText}>الدفع</Text>
+                <Text style={styles.checkoutButtonText}>لارسال الطلب</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -327,7 +343,11 @@ const CartPage = ({ route, navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalText}>
-              Are you sure you want to place the order?
+              Are you sure you want to place the order? هل انت متاكد من ارسال
+              الطلب؟
+            </Text>
+            <Text style={styles.modalText}>
+              We will call you later !! سنتصل بك لاحقا
             </Text>
             {orderType === "Delivery" && (
               <TextInput
@@ -337,30 +357,31 @@ const CartPage = ({ route, navigation }) => {
                 onChangeText={(text) => setDeliveryAddress(text)}
               />
             )}
-
-            <TouchableOpacity
-              style={styles.sendOrderButton}
-              onPress={handleSendOrder}
-            >
-              <Text style={styles.sendOrderButtonText}>Send Order</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>Cancel</Text>
-            </TouchableOpacity>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.sendOrderButton}
+                onPress={handleSendOrder}
+              >
+                <Text style={styles.sendOrderButtonText}>Send Order</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.closeButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   emptyCartText: {
     fontSize: 20,
-    marginBottom: 20,
+    marginBottom: 30,
   },
   modalText: {
     fontSize: 14,
@@ -371,6 +392,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
+    marginTop: 30,
   },
   container: {
     flex: 1,
@@ -380,7 +402,7 @@ const styles = StyleSheet.create({
   cartItemContainer: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#fff",
+
     padding: 10,
     marginVertical: 5,
     width: "100%",
@@ -401,7 +423,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     backgroundColor: "#fff",
     borderLeftWidth: 1, // Right border
-    borderColor: "#F89D14",
+    borderColor: "#2E3D1A",
     borderTopLeftRadius: 10, // Bottom left radius
     borderBottomLeftRadius: 10, // Bottom right radius
     padding: 10,
@@ -425,14 +447,14 @@ const styles = StyleSheet.create({
   },
   cartItemPrice: {
     fontSize: 14,
-    color: "#F89D14",
+    color: "#000",
     marginBottom: 5,
   },
   closeButton2: {
     position: "absolute",
     top: 5,
     right: 5,
-    backgroundColor: "#F89D14",
+    backgroundColor: "#fff",
     borderRadius: 10,
 
     width: 24,
@@ -441,7 +463,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   closeButton2Text: {
-    color: "#fff",
+    color: "#000",
     fontWeight: "bold",
     fontSize: 14,
   },
@@ -489,6 +511,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: "80%",
     alignItems: "center",
+    left: "10%",
+    top: "100%",
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: "#2E3D1A",
   },
   modalTitle: {
     fontSize: 20,
@@ -504,11 +531,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sendOrderButton: {
-    backgroundColor: "#F89D14",
+    backgroundColor: "#2E3D1A",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
-    marginBottom: 10,
+    marginRight: 10,
   },
   sendOrderButtonText: {
     color: "#fff",
@@ -516,13 +543,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   closeButton: {
-    backgroundColor: "#ff0000",
+    backgroundColor: "#fff",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#2E3D1A",
   },
   closeButtonText: {
-    color: "#fff",
+    color: "#2E3D1A",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -544,6 +573,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 10,
+    color: "white",
   },
   orderTypeButtons: {
     flexDirection: "row",
@@ -552,18 +582,19 @@ const styles = StyleSheet.create({
   },
   orderTypeButton: {
     borderWidth: 1,
-    borderColor: "#F89D14",
+    borderColor: "#2E3D1A",
     borderRadius: 10,
     padding: 10,
     marginHorizontal: 5,
+    backgroundColor: "#fff",
   },
   orderTypeButtonSelected: {
-    backgroundColor: "#F89D14",
+    backgroundColor: "#2E3D1A",
   },
   orderTypeButtonText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#F89D14",
+    color: "#2E3D1A",
     alignContent: "center",
     alignSelf: "center",
   },
@@ -586,7 +617,6 @@ const styles = StyleSheet.create({
     color: "#F89D14",
   },
   paymentSummary: {
-    backgroundColor: "#fff",
     borderRadius: 10,
     paddingHorizontal: 10,
     alignContent: "center",
@@ -598,36 +628,37 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignContent: "center",
     alignSelf: "center",
+    color: "white",
   },
   paymentSummaryText: {
     fontSize: 16,
     marginBottom: 5,
     alignContent: "center",
     alignSelf: "center",
+    color: "white",
   },
   actionButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 25,
-    backgroundColor: "#fff",
   },
   addButton: {
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#F89D14",
+    borderColor: "#2E3D1A",
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
     width: "48%",
   },
   addButtonText: {
-    color: "#F89D14",
+    color: "#2E3D1A",
     fontSize: 20,
 
     alignSelf: "center",
   },
   checkoutButton: {
-    backgroundColor: "#F89D14",
+    backgroundColor: "#2E3D1A",
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
